@@ -1,0 +1,8 @@
+[package]
+
+name = "LandbaseOptimizer"
+version = "0.0.1"
+authors = ["Robin McNally rlmcnall@gmail.com"]
+
+[dependencies]
+rustc-serialize = "*"
