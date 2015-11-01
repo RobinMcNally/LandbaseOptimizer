@@ -1,6 +1,13 @@
 extern crate rustc_serialize;
-pub mod card;
+use rustc_serialize::json::Json;
+use std::fs::File;
+use std::io::Read;
 
 fn main() {
-    println!("Yo");
+    let mut file = File::open("AllCards.json").unwrap();
+    let mut data = String::new();
+    file.read_to_string(&mut data).unwrap();
+
+    let json = Json::from_str(&data).unwrap();
+    println!("{}", json.find_path(&["Corpseweft"]).unwrap());
 }

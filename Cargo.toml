@@ -1,6 +1,6 @@
 [package]
 
-name = "LandbaseOptimizer"
+name = "landbase_optimizer"
 version = "0.0.1"
 authors = ["Robin McNally rlmcnall@gmail.com"]
 

@@ -1,5 +1,5 @@
 [root]
-name = "LandbaseOptimizer"
+name = "landbase_optimizer"
 version = "0.0.1"
 dependencies = [
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
