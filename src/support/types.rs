@@ -1,7 +1,12 @@
 use std::fmt;
 
-pub struct CardSeries {
-    pub cards : Vec<Card>
+pub struct Population {
+    pub decks : Vec<Deck>
+}
+
+pub struct Deck {
+    pub cards : Vec<Card>,
+    pub fitness : f32,
 }
 
 pub struct Card {

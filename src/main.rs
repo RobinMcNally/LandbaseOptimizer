@@ -1,10 +1,11 @@
 extern crate rustc_serialize;
+extern crate rand;
 use rustc_serialize::json::Json;
 use std::fs::File;
 use std::env;
 
 use std::io::Read;
-use support::types::CardSeries;
+use support::types::Deck;
 use support::types::Card;
 pub mod support;
 
@@ -17,7 +18,7 @@ fn main() {
         return;
     }
 
-    let mut file = File::open("AllCards.json").unwrap();
+    let mut file = File::open("res/AllCards.json").unwrap();
     let mut data = String::new();
     file.read_to_string(&mut data).unwrap();
     let json = Json::from_str(&data).unwrap();
@@ -28,7 +29,7 @@ fn main() {
     static_cards.read_to_string(&mut raw).unwrap();
     let split = raw.split("\n");
 
-    let mut series = CardSeries {cards: vec![]};
+    let mut series = Deck {cards: vec![], fitness: 0.0};
 
     for x in split {
         let s = match json.find(&x) {

@@ -6,3 +6,4 @@ authors = ["Robin McNally rlmcnall@gmail.com"]
 
 [dependencies]
 rustc-serialize = "*"
+rand = "0.3.12"
