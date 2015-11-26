@@ -2,7 +2,12 @@ use support::types::*;
 use rand;
 use rand::distributions::{IndependentSample, Range};
 
-fn randomcardset(setsize: i32, pop: &mut Population) {
+const POPULATIONSIZE: i32 = 12;
+const CROSSCHANCE: f32 = 0.7;
+const MUTCHANCE: f32 = 0.1;
+
+
+fn randomcardset(pop: &mut Population) {
     return;
 }
 
@@ -22,38 +27,66 @@ fn sortbyfitness(pop: &mut Population) {
     }
 }
 
-pub fn run(fixed: Deck, decksize: i32, deckcount: i32) {
+pub fn run(fixed: Deck, decksize: i32) {
     //generate base population, random combindations of decks
     let mut rng = rand::thread_rng();
-    let range = Range::new(0, 1);
+    let decimal_range = Range::new(0., 1.);
+    let maxpop = decksize as usize - fixed.cards.len();
+    let land_range = Range::new(0, maxpop);
 
     let mut pop = Population {decks: vec![]};
-    randomcardset(deckcount, &mut pop);
+    let mut newPop = Population {decks: vec![]};
+    randomcardset(&mut pop);
 
 
     //Initialize Fitness
     let mut fitnessSum: f32 = 0.0;
-    for mut x in 0..(pop.decks.len() - 1) {
+    for x in 0..(pop.decks.len() - 1) {
         pop.decks[x].fitness = callfitness(&pop.decks[x]);
         fitnessSum += pop.decks[x].fitness;
     }
     //Normalize the fitness
-    for mut x in 0..(pop.decks.len() - 1) {
+    for x in 0..(pop.decks.len() - 1) {
         pop.decks[x].fitness = pop.decks[x].fitness / fitnessSum;
     }
     //Sort by fitness
     sortbyfitness(&mut pop);
 
+    let mut index = 0;
+    let mut popIndex = 0;
+    let mut parent_decks: Vec<usize> = vec![];
+    let mut father;
+    let mut mother;
+    fitnessSum = 0.0;
     //repeat for size of population
-    while true {
-        //select two parents from the population (random with weights towards higher fitness)
-        let mut parents = 0;
-        let mut parent_decks: Vec<&mut Deck> = vec![];
-        while parents != 2 {
+    loop {
+        //Generate a new population from the current one
+        while popIndex < POPULATIONSIZE {
+            //select two parents from the population (random with weights towards higher fitness)
+            for x in 0..1 {
+                let mut num: f32 = decimal_range.ind_sample(&mut rng);
+                println!("{}", num);
+                while fitnessSum < num {
+                    fitnessSum += pop.decks[index].fitness;
+                    index += 1;
+                }
+                parent_decks.push(index - 1);
+            }
+                father = &pop.decks[parent_decks[0]];
+                mother = &pop.decks[parent_decks[1]];
+            //Cross them together at a random point
+            if (decimal_range.ind_sample(&mut rng) < CROSSCHANCE) {
+                let mut num: usize = land_range.ind_sample(&mut rng);
+            }
+            if (decimal_range.ind_sample(&mut rng) < MUTCHANCE) {
 
+            }
+            //newPop.decks[popIndex] = ;//First Child
+            if popIndex != POPULATIONSIZE - 1 {
+                //newPop.decks[popIndex + 1] = ;//Second
+            }
         }
     }
-        //Cross them together at a random point
         //Random chance to mutate
         //Put child into new population
     //if end condition is met stop and return best solution in current population
