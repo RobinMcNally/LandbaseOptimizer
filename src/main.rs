@@ -7,6 +7,7 @@ use std::env;
 use std::io::Read;
 use support::types::Deck;
 use support::types::Card;
+use support::genetic;
 pub mod support;
 
 fn main() {
@@ -44,16 +45,31 @@ fn main() {
             None => {println!("Yo type's broke"); return },
             Some(i) => i,
         };
-        let cmctemp = match s.find("cmc") {
-            None => { println!("Yo cmc's broke"); return },
-            Some(i) => i,
-        };
+        // println!("Type: {}", typetemp.to_string());
+        // if typetemp.to_string() != "Land" {
+        //     let cmctemp = match s.find("manaCost") {
+        //         None => {println!("Yo cmc's broke"); return },
+        //         Some(i) => i,
+        //     };
+        //     let card = Card { name: nametemp.to_string(), cardtype : typetemp.to_string(), manaCost : cmctemp.to_string()};
+        //     series.cards.push(card);
+        // } else {
+        //     let mana = String::new();
+        //     let card = Card { name: nametemp.to_string(), cardtype : typetemp.to_string(), manaCost : mana};
+        //     series.cards.push(card);
+        //
+        // }
+
+        let card = Card { name: nametemp.to_string(), cardtype : typetemp.to_string(), mana_cost : String::new()};
+        series.cards.push(card);
+
         //println!("{}", nametemp.to_string());
         //println!("{}", cmctemp.to_string());
-        let card = Card { name: nametemp.to_string(), cardtype : typetemp.to_string(), cmc : cmctemp.to_string().parse::<i32>().unwrap()};
-        series.cards.push(card);
-        //println!("{}", s);
+                //println!("{}", s);
     }
+    println!("Running Genetic");
+    genetic::run(&series, 60);
+    println!("Genetic Done");
     for x in series.cards {
         println!("{}", x);
     }

@@ -1,13 +1,13 @@
 use std::fmt;
 //#[derive(Copy, Clone)]
-
+#[derive(Debug, Clone)]
 pub struct Population {
     pub decks : Vec<Deck>
 }
 
 // impl Copy for Population {}
 //impl Clone for Population { fn clone(&self) -> Population { *self } }
-
+#[derive(Debug, Clone)]
 pub struct Deck {
     pub cards : Vec<Card>,
     pub fitness : f32,
@@ -15,19 +15,19 @@ pub struct Deck {
 
 // impl Copy for Deck {}
 // impl Clone for Deck { fn clone(&self) -> Deck { *self } }
-
+#[derive(Debug, Clone)]
 pub struct Card {
     pub name : String,
     pub cardtype : String,
-    pub cmc : i32,
+    pub mana_cost : String,
 }
 
-// impl Copy for Card {}
-// impl Clone for Card { fn clone(&self) -> Card { *self } }
+//impl Copy for Card {}
+//impl Clone for Card { fn clone(&self) -> Card { *self } }
 
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "name:{}, type: {}, cmc {}", self.name, self.cardtype, self.cmc)
+        write!(f, "name:{}, type: {}, manaCost: {}", self.name, self.cardtype, self.mana_cost)
     }
 }
 
