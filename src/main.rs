@@ -13,7 +13,6 @@ pub mod support;
 fn main() {
     let args : Vec<_> = env::args().collect();
 
-
     if args.len() < 2 {
         println!("usage: {} filename", args[0]);
         return;
@@ -31,7 +30,6 @@ fn main() {
     let split = raw.split("\n");
 
     let mut series = Deck {cards: vec![], fitness: 0.0};
-
     for x in split {
         let s = match json.find(&x) {
             None => break,
@@ -45,32 +43,26 @@ fn main() {
             None => {println!("Yo type's broke"); return },
             Some(i) => i,
         };
-        // println!("Type: {}", typetemp.to_string());
-        // if typetemp.to_string() != "Land" {
-        //     let cmctemp = match s.find("manaCost") {
-        //         None => {println!("Yo cmc's broke"); return },
-        //         Some(i) => i,
-        //     };
-        //     let card = Card { name: nametemp.to_string(), cardtype : typetemp.to_string(), manaCost : cmctemp.to_string()};
-        //     series.cards.push(card);
-        // } else {
-        //     let mana = String::new();
-        //     let card = Card { name: nametemp.to_string(), cardtype : typetemp.to_string(), manaCost : mana};
-        //     series.cards.push(card);
-        //
-        // }
+        let colors = match s.find("colors"){
+            None => {println!("Yo color's broke"); return },
+            Some(i) => i,
+        };
 
-        let card = Card { name: nametemp.to_string(), cardtype : typetemp.to_string(), mana_cost : String::new()};
+        let arr = colors.as_array().unwrap();
+        let mut stringarr: Vec<String> = vec![];
+
+        for x in 0..arr.len() {
+            let mut strtemp = arr.get(x).unwrap().to_string();
+            strtemp.remove(0);
+            strtemp.pop();
+            stringarr.push(strtemp);
+        }
+
+        let card = Card { name: nametemp.to_string(), cardtype : typetemp.to_string(), mana_cost : String::new(), colors: stringarr};
         series.cards.push(card);
-
-        //println!("{}", nametemp.to_string());
-        //println!("{}", cmctemp.to_string());
-                //println!("{}", s);
     }
     println!("Running Genetic");
-    genetic::run(&series, 60);
+    let result : Deck = genetic::run(&series, 60);
+    println!("The Deck: {:?}", result.cards);
     println!("Genetic Done");
-    for x in series.cards {
-        println!("{}", x);
-    }
 }
