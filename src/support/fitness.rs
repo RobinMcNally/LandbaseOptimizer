@@ -1,6 +1,7 @@
 use support::types::*;
 
-const DISDAIN_CONSTANT: f32 = -1.0;
+const DISDAIN_CONSTANT: f32 = -30.0;
+const FAVOR_CONSTANT: f32 = 30.0;
 
 pub fn cardcolorfitness(fixed: &Deck, totest: &Deck) -> f32 {
     let mut costs : Vec<f32> = vec![0.0; 5];
@@ -33,12 +34,12 @@ pub fn cardcolorfitness(fixed: &Deck, totest: &Deck) -> f32 {
     for x in 0..5 {
         if costs[x] != 0.0 {
             ////println!("landcounts: {}, costs: {}", landcounts[x], costs[x]);
-            costs[x] = landcounts[x] / costs[x];
+            costs[x] = (landcounts[x] / costs[x]) * FAVOR_CONSTANT;
         } else if landcounts[x] > 0.0 {
-            costs[x] = DISDAIN_CONSTANT;
+            costs[x] = DISDAIN_CONSTANT * landcounts[x];
         }
     }
-    let mut sum = 0.0;
+    let mut sum = 1000.0;
     //println!("{:?}", costs);
     for x in costs {
             sum += x;
