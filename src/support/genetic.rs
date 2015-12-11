@@ -1,11 +1,13 @@
 use support::types::*;
+use support::fitness::cardcolorfitness;
 use rand;
 use rand::distributions::{IndependentSample, Range};
 
 const POPULATIONSIZE: i32 = 50;
-const CROSSCHANCE: f32 = 0.7;
-const MUTCHANCE: f32 = 1.0;
-const GENERATIONS: usize = 700;
+const CROSSCHANCE: f32 = 0.6;
+const MUTCHANCE: f32 = 0.05;
+const GENERATIONS: usize = 1000;
+const ELITIST: bool = true;
 
 fn randomland() -> Card {
     let mut rng = rand::thread_rng();
@@ -50,49 +52,8 @@ fn randomlandset(pop: &mut Population, decksize: i32) {
         }
         pop.decks.push(deck);
     }
-    return;
 }
-fn cardcolorfitness(fixed: &Deck, totest: &Deck) -> f32 {
-    let mut costs : Vec<f32> = vec![0.0; 5];
-    let mut landcounts : Vec<f32> = vec![0.0; 5];
 
-    for x in fixed.clone().cards {
-        for y in 0..(x.colors.len()) {
-            match &(x.colors.get(y).unwrap())[..] {
-                "White" => costs[0] += 1.0,
-                "Blue"  => costs[1] += 1.0,
-                "Black" => costs[2] += 1.0,
-                "Red"   => costs[3] += 1.0,
-                "Green" => costs[4] += 1.0,
-                _ => println!("Unexpected performance: costs"),
-            }
-        }
-    }
-
-    for x in totest.clone().cards {
-        match &(x.name)[..] {
-            "Plains"    => landcounts[0] += 1.0,
-            "Island"    => landcounts[1] += 1.0,
-            "Swamp"     => landcounts[2] += 1.0,
-            "Mountain"  => landcounts[3] += 1.0,
-            "Forest"    => landcounts[4] += 1.0,
-            _ => println!("Unexpected performance: landcounts"),
-        };
-    }
-
-    for x in 0..5 {
-        if costs[x] != 0.0 {
-            println!("landcounts: {}, costs: {}", landcounts[x], costs[x]);
-            costs[x] = landcounts[x] / costs[x];
-        }
-    }
-    let mut sum = 0.0;
-    for x in costs {
-            sum += x;
-    }
-    println!("Sum: {}", sum);
-    return sum;
-}
 //Calls various fitness functions
 fn callfitness(fixed: &Deck, totest: &Deck) -> f32 {
     return cardcolorfitness(fixed, totest);
@@ -102,7 +63,7 @@ fn callfitness(fixed: &Deck, totest: &Deck) -> f32 {
 //Only bubble sort temporarily
 fn sortbyfitness(pop: &mut Population) {
     for x in 0..pop.decks.len() {
-        for y in (x + 1)..(pop.decks.len()-1) {
+        for y in (x + 1)..pop.decks.len() {
             if pop.decks[x].fitness < pop.decks[y].fitness {
                 pop.decks.swap(x, y);
             }
@@ -118,16 +79,17 @@ pub fn run(fixed: &Deck, decksize: i32) -> Deck {
     let decimal_range = Range::new(0., 1.);
 
     let mut pop = Population {decks: vec![]};
-    println!("maxpop: {}", maxpop);
+    //println!("maxpop: {}", maxpop);
     randomlandset(&mut pop, maxpop as i32);
 
     //Initialize Fitness
     let mut fitness_sum: f32 = 0.0;
     for x in 0..pop.decks.len() {
         pop.decks[x].fitness = callfitness(fixed, &pop.decks[x]);
-        println!("{:?}", pop.decks[x]);
-        println!("{:?}", pop.decks[x].fitness);
+        ////println!("{:?}", pop.decks[x]);
+        ////println!("{:?}", pop.decks[x].fitness);
         fitness_sum += pop.decks[x].fitness;
+        //println!("index: {}, fitness: {}, fitness_sum: {}", x, pop.decks[x].fitness, fitness_sum);
     }
     //Normalize the fitness
     for x in 0..pop.decks.len() {
@@ -135,35 +97,45 @@ pub fn run(fixed: &Deck, decksize: i32) -> Deck {
     }
     //Sort by fitness
     sortbyfitness(&mut pop);
-
+    for x in pop.decks.clone() {
+        print!(", {}", x.fitness);
+    }
+    println!("");
     //repeat for size of population
     for _ in 0..GENERATIONS {
         //Generate a new population from the current one
         let mut decks: Vec<Deck> = vec![];
-        let mut index = 0;
+        let mut index;
         let mut pop_index = 0;
         let mut parent_decks: Vec<usize> = vec![];
+        if ELITIST {
+            decks.push(pop.decks[0].clone());
+            pop_index += 1;
+        }
         while pop_index < POPULATIONSIZE {
             //select two parents from the population (random with weights towards higher fitness)
             for _ in 0..2 {
                 let num: f32 = decimal_range.ind_sample(&mut rng);
-                //println!("{}", num);
+                ////println!("{}", num);
                 fitness_sum = 0.0;
+                index = 0;
+                //println!("num: {}", num);
                 while fitness_sum < num {
                     fitness_sum += pop.decks[index].fitness;
+                    //println!("index: {}, fitness_sum: {}, fitness: {}", index, fitness_sum, pop.decks[index].fitness);
                     index += 1;
                 }
                 parent_decks.push(index - 1);
             }
-            let father = pop.decks.get(parent_decks[0]).unwrap().clone();
-            let mother = pop.decks.get(parent_decks[1]).unwrap().clone();
+            let father = pop.decks[parent_decks[0]].clone();
+            let mother = pop.decks[parent_decks[1]].clone();
 
             let mut child1 = Deck{cards: vec![], fitness: 0.0};
             let mut child2 = Deck{cards: vec![], fitness: 0.0};
 
             //Cross them together at a random point
             if decimal_range.ind_sample(&mut rng) < CROSSCHANCE {
-                println!("Crossing");
+                //println!("Crossing");
                 let num: usize = land_range.ind_sample(&mut rng);
 
                 let (fleft, fright) = father.cards.split_at(num);
@@ -179,26 +151,24 @@ pub fn run(fixed: &Deck, decksize: i32) -> Deck {
                 vectemp.extend(fright.iter().cloned());
                 child2.cards = vectemp;
             } else {
-                println!("Not Crossing");
-                let mut child1 = Deck{cards: vec![], fitness: 0.0};
-                child1.cards = father.cards.clone();
-                let mut child2 = Deck{cards: vec![], fitness: 0.0};
-                child2.cards = mother.cards.clone();
+                //println!("Not Crossing");
+                child1.cards.extend(father.cards.clone());
+                child2.cards.extend(mother.cards.clone());
             }
             //Mutate Child1 Maybe
             if decimal_range.ind_sample(&mut rng) < MUTCHANCE {
-                println!("Mutating Child 1: Size {}", child2.cards.len());
+                //println!("Mutating Child 1: Size {}", child2.cards.len());
                 let num = land_range.ind_sample(&mut rng);
                 child1.cards.push(randomland());
                 child1.cards.swap_remove(num);
-                println!("Done Mutating");
+                //println!("Done Mutating");
             }
             if decimal_range.ind_sample(&mut rng) < MUTCHANCE {
-                println!("Mutating Child 2: Size {}", child2.cards.len());
                 let num = land_range.ind_sample(&mut rng);
                 child2.cards.push(randomland());
+                //println!("Mutating Child 2: Size {}", child2.cards.len());
                 child2.cards.swap_remove(num);
-                println!("Done Mutating");
+                // println!("Done Mutating");
             }
             decks.push(child1.clone());
             if pop_index != POPULATIONSIZE - 1 {
@@ -207,7 +177,7 @@ pub fn run(fixed: &Deck, decksize: i32) -> Deck {
             pop_index += 2;
         }
         //Initialize Fitness
-        let mut pop = Population {decks: decks};
+        let mut pop = Population {decks: decks.clone()};
         let mut fitness_sum: f32 = 0.0;
         for x in 0..pop.decks.len() {
             pop.decks[x].fitness = callfitness(fixed, &pop.decks[x]);
@@ -220,7 +190,7 @@ pub fn run(fixed: &Deck, decksize: i32) -> Deck {
         //Sort by fitness
         sortbyfitness(&mut pop);
     }
-    return pop.decks.first().unwrap().clone();
+    return pop.decks[0].clone();
     //return pop.decks.first().unwrap();
         //Random chance to mutate
         //Put child into new population
