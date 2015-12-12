@@ -1,17 +1,12 @@
 use support::types::*;
-use support::utils::{sortbyfitness, randomland};
+use support::utils::{sortbyfitness, randomland, roulette_select, tournament_select};
 use support::fitness::cardcolorfitness;
 use rand;
 use rand::distributions::{IndependentSample, Range};
 
-const POPULATIONSIZE: i32 = 200;
-const CROSSCHANCE: f32 = 0.8;
-const MUTCHANCE: f32 = 0.05;
-const GENERATIONS: usize = 1000;
-const ELITIST: bool = false;
 
-fn randomlandset(pop: &mut Population, decksize: i32) {
-    for _ in 0..(POPULATIONSIZE - 1) {
+fn randomlandset(pop: &mut Population, decksize: i32, population_size: i32) {
+    for _ in 0..population_size {
         let mut deck = Deck {cards: vec![], fitness: 0.0};
         for _ in 0..decksize {
             deck.cards.push(randomland());
@@ -40,56 +35,50 @@ fn set_population_fitness(pop: &mut Population, fixed: &Deck) {
     }
 }
 
-pub fn run(fixed: &Deck, decksize: i32) -> Deck {
+fn select_parents(pop: &mut Population, selection_type: &str, land_len: usize) -> (Deck, Deck) {
+    match selection_type {
+        "roulette" => return roulette_select(&pop),
+        "tournament" => return tournament_select(&pop, land_len),
+        _ => return tournament_select(&pop, land_len),
+    };
+}
+
+pub fn run( fixed: &Deck,           decksize: i32,
+            population_size: i32,   selection_type: &str,
+            cross_chance: f32,      mut_chance: f32,
+            gen_count: i32,         elitist: bool) -> Deck {
     //generate base population, random combindations of decks
     let mut rng = rand::thread_rng();
-    let maxpop = decksize as usize - fixed.cards.len();
-    let land_range = Range::new(0, maxpop);
+    let land_len: usize = decksize as usize - fixed.cards.len();
+    let land_range = Range::new(0, land_len);
     let decimal_range = Range::new(0., 1.);
 
     let mut pop = Population {decks: vec![]};
-    randomlandset(&mut pop, maxpop as i32);
+    randomlandset(&mut pop, land_len as i32, population_size);
 
     set_population_fitness(&mut pop, fixed);
 
     sortbyfitness(&mut pop);
-
-    let mut fitness_sum: f32;
+    
     //repeat for size of population
-    for _ in 0..GENERATIONS {
+    for _ in 0..gen_count {
     // while callfitness(fixed, &pop.decks[0].clone()) < 600.0 {
         //Generate a new population from the current one
         let mut decks: Vec<Deck> = vec![];
-        let mut index;
         let mut pop_index = 0;
-        let mut parent_decks: Vec<usize> = vec![];
-        if ELITIST {
+        if elitist {
             decks.push(pop.decks[0].clone());
             pop_index += 1;
         }
-        while pop_index < POPULATIONSIZE {
-            //select two parents from the population (random with weights towards higher fitness)
-            for _ in 0..2 {
-                let num: f32 = decimal_range.ind_sample(&mut rng);
-                ////println!("{}", num);
-                fitness_sum = 0.0;
-                index = 0;
-                //println!("num: {}", num);
-                while fitness_sum < num {
-                    fitness_sum += pop.decks[index].fitness;
-                    //println!("index: {}, fitness_sum: {}, fitness: {}", index, fitness_sum, pop.decks[index].fitness);
-                    index += 1;
-                }
-                parent_decks.push(index - 1);
-            }
-            let father = pop.decks[parent_decks[0]].clone();
-            let mother = pop.decks[parent_decks[1]].clone();
+        while pop_index < population_size {
+            //select two parents from the population
+            let (father, mother) = select_parents(&mut pop, selection_type, land_len);
 
             let mut child1 = Deck{cards: vec![], fitness: 0.0};
             let mut child2 = Deck{cards: vec![], fitness: 0.0};
 
             //Cross them together at a random point
-            if decimal_range.ind_sample(&mut rng) < CROSSCHANCE {
+            if decimal_range.ind_sample(&mut rng) < cross_chance {
 
                 // Choose the split point
                 let num: usize = land_range.ind_sample(&mut rng);
@@ -108,18 +97,18 @@ pub fn run(fixed: &Deck, decksize: i32) -> Deck {
                 child2.cards.extend(mother.cards.clone());
             }
             //Mutate Child1 Maybe
-            if decimal_range.ind_sample(&mut rng) < MUTCHANCE {
+            if decimal_range.ind_sample(&mut rng) < mut_chance {
                 let num = land_range.ind_sample(&mut rng);
                 child1.cards.push(randomland());
                 child1.cards.swap_remove(num);
             }
-            if decimal_range.ind_sample(&mut rng) < MUTCHANCE {
+            if decimal_range.ind_sample(&mut rng) < mut_chance {
                 let num = land_range.ind_sample(&mut rng);
                 child2.cards.push(randomland());
                 child2.cards.swap_remove(num);
             }
             decks.push(child1.clone());
-            if pop_index != POPULATIONSIZE - 1 {
+            if pop_index != population_size - 1 {
                 decks.push(child2.clone());
             }
             pop_index += 2;

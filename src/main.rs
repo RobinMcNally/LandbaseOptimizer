@@ -61,8 +61,7 @@ fn main() {
         let card = Card { name: nametemp.to_string(), cardtype : typetemp.to_string(), mana_cost : String::new(), colors: stringarr};
         series.cards.push(card);
     }
-    println!("Running Genetic");
-    let result : Deck = genetic::run(&series, 60);
-    println!("The Deck: {:?}", result.cards);
-    println!("Genetic Done");
+
+    //Lets find some convergance!
+    genetic::run(&series, 60, 100, "tournament", 0.3, 0.05, 500, true);
 }
