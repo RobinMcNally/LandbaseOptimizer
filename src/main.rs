@@ -65,7 +65,7 @@ fn main() {
     //popiterator: 100, selectchance: 0.3, mutchance: 0.08, generation_size: 500, tournament, elite
     //13/24 were mountains
 
-    println!("{:?}", genetic::run(&series, 60, 500, "tournament", 0.3, 0.08, 500, true));
+    println!("{:?}", genetic::run(&series, 60, 100, "elite", 0.3, 0.08, 500, true));
 
     // let mut best_vec: Vec<(Deck, f32)> = vec![];
     // let mut description_vec: Vec<String> = vec![];

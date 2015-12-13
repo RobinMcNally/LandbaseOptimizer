@@ -76,6 +76,10 @@ pub fn roulette_select(pop: &Population) -> (Deck, Deck) {
     return (father.clone(), mother.clone());
 }
 
+pub fn elite_select(pop: &Population) -> (Deck, Deck) {
+    return (pop.decks[0].clone(), pop.decks[1].clone());
+}
+
 pub fn tournament_select(pop: &Population) -> (Deck, Deck) {
     let mut rng = rand::thread_rng();
     let pop_range = Range::new(0, pop.decks.len());

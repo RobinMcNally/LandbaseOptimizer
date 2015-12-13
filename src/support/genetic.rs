@@ -1,6 +1,6 @@
 use support::types::*;
-use support::utils::{sortbyfitness, randomland, roulette_select, tournament_select};
-use support::fitness::cardcolorfitness;
+use support::utils::{sortbyfitness, randomland, roulette_select, tournament_select, elite_select};
+use support::fitness::{cardcolorfitness, cardcolorfitnesssum};
 use rand;
 use rand::distributions::{IndependentSample, Range};
 
@@ -17,7 +17,7 @@ fn randomlandset(pop: &mut Population, decksize: i32, population_size: i32) {
 
 //Calls various fitness functions
 fn callfitness(fixed: &Deck, totest: &Deck) -> f32 {
-    return cardcolorfitness(fixed, totest);
+    return cardcolorfitnesssum(fixed, totest);
 }
 
 fn set_population_fitness(pop: &mut Population, fixed: &Deck) {
@@ -39,6 +39,7 @@ fn select_parents(pop: &mut Population, selection_type: &str) -> (Deck, Deck) {
     match selection_type {
         "roulette" => return roulette_select(&pop),
         "tournament" => return tournament_select(&pop),
+        "elite" => return elite_select(&pop),
         _ => return tournament_select(&pop),
     };
 
