@@ -35,23 +35,26 @@ fn set_population_fitness(pop: &mut Population, fixed: &Deck) {
     }
 }
 
-fn select_parents(pop: &mut Population, selection_type: &str, land_len: usize) -> (Deck, Deck) {
+fn select_parents(pop: &mut Population, selection_type: &str) -> (Deck, Deck) {
     match selection_type {
         "roulette" => return roulette_select(&pop),
-        "tournament" => return tournament_select(&pop, land_len),
-        _ => return tournament_select(&pop, land_len),
+        "tournament" => return tournament_select(&pop),
+        _ => return tournament_select(&pop),
     };
+
 }
 
 pub fn run( fixed: &Deck,           decksize: i32,
             population_size: i32,   selection_type: &str,
             cross_chance: f32,      mut_chance: f32,
-            gen_count: i32,         elitist: bool) -> Deck {
+            gen_count: i32,         elitist: bool) -> (Deck, f32) {
     //generate base population, random combindations of decks
     let mut rng = rand::thread_rng();
     let land_len: usize = decksize as usize - fixed.cards.len();
     let land_range = Range::new(0, land_len);
     let decimal_range = Range::new(0., 1.);
+
+    //println!("land len: {}, population_size: {}", land_len, population_size);
 
     let mut pop = Population {decks: vec![]};
     randomlandset(&mut pop, land_len as i32, population_size);
@@ -59,7 +62,7 @@ pub fn run( fixed: &Deck,           decksize: i32,
     set_population_fitness(&mut pop, fixed);
 
     sortbyfitness(&mut pop);
-    
+
     //repeat for size of population
     for _ in 0..gen_count {
     // while callfitness(fixed, &pop.decks[0].clone()) < 600.0 {
@@ -72,7 +75,7 @@ pub fn run( fixed: &Deck,           decksize: i32,
         }
         while pop_index < population_size {
             //select two parents from the population
-            let (father, mother) = select_parents(&mut pop, selection_type, land_len);
+            let (father, mother) = select_parents(&mut pop, selection_type);
 
             let mut child1 = Deck{cards: vec![], fitness: 0.0};
             let mut child2 = Deck{cards: vec![], fitness: 0.0};
@@ -117,11 +120,11 @@ pub fn run( fixed: &Deck,           decksize: i32,
         let mut pop = Population{decks: decks};
 
         set_population_fitness(&mut pop, fixed);
-        println!("{:?}", callfitness(fixed, &pop.decks[0].clone()));
+        //println!("{:?}", callfitness(fixed, &pop.decks[0].clone()));
         //Sort by fitness
         sortbyfitness(&mut pop);
     }
-    return pop.decks[0].clone();
+    return (pop.decks[0].clone(), callfitness(&fixed, &pop.decks[0]));
     //return pop.decks.first().unwrap();
         //Random chance to mutate
         //Put child into new population

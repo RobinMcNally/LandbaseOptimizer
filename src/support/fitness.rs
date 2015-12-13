@@ -1,4 +1,7 @@
 use support::types::*;
+use rand;
+use rand::distributions::{IndependentSample, Range};
+
 
 const DISDAIN_CONSTANT: f32 = -30.0;
 const FAVOR_CONSTANT: f32 = 30.0;

@@ -62,6 +62,37 @@ fn main() {
         series.cards.push(card);
     }
 
-    //Lets find some convergance!
-    genetic::run(&series, 60, 100, "tournament", 0.3, 0.05, 500, true);
+    //popiterator: 100, selectchance: 0.3, mutchance: 0.08, generation_size: 500, tournament, elite
+    //13/24 were mountains
+
+    println!("{:?}", genetic::run(&series, 60, 500, "tournament", 0.3, 0.08, 500, true));
+
+    // let mut best_vec: Vec<(Deck, f32)> = vec![];
+    // let mut description_vec: Vec<String> = vec![];
+    // //Lets find some convergance!
+    // for selectchance in 1..10{
+    //     for mutchance in 1..12 {
+    //             let string_temp: String = format!("popiterator: {}, selectchance: {}, mutchance: {}, generation_size: {}, tournament, elite",
+    //                 100, (selectchance as f32 * 0.05), (mutchance as f32 * 0.01), 500);
+    //             description_vec.push(string_temp);
+    //             let (a, b) = genetic::run(&series, 60,
+    //                 100, "tournament",
+    //                 (selectchance as f32 * 0.1),
+    //                 (mutchance as f32 * 0.02),
+    //                 500, true);
+    //             best_vec.push( (a, b) );
+    //     }
+    // }
+    // let mut best_fit: f32 = 0.0;
+    // let mut best_description: String = String::new();
+    // let mut best: Deck = Deck{cards: vec![], fitness: 0.0};
+    // for x in 0..best_vec.len() {
+    //     if best_vec[x].1 > best_fit {
+    //         best_fit = best_vec[x].1;
+    //         best = best_vec[x].0.clone();
+    //         best_description = description_vec[x].clone();
+    //     }
+    // }
+    //
+    // println!("Best Fitness Found: \n{}\nFitnesss: {}\n{:?}", best_description, best_fit, best);
 }

@@ -64,7 +64,7 @@ pub fn roulette_select(pop: &Population) -> (Deck, Deck) {
         let num: f32 = decimal_range.ind_sample(&mut rng);
         let mut fitness_sum: f32 = 0.0;
         let mut index: usize = 0;
-        while fitness_sum < num {
+        while fitness_sum <= num {
             fitness_sum += pop.decks[index].fitness;
             index += 1;
         }
@@ -76,15 +76,13 @@ pub fn roulette_select(pop: &Population) -> (Deck, Deck) {
     return (father.clone(), mother.clone());
 }
 
-pub fn tournament_select(pop: &Population, land_len: usize) -> (Deck, Deck) {
+pub fn tournament_select(pop: &Population) -> (Deck, Deck) {
     let mut rng = rand::thread_rng();
-    let land_range = Range::new(0, land_len);
+    let pop_range = Range::new(0, pop.decks.len());
     let mut return_pop: Population = Population {decks: vec![]};
-
     let loop_size: usize = (pop.decks.len() as i32 / TOURNAMENTFRAC) as usize;
-
     for _ in 0..loop_size {
-        let num = land_range.ind_sample(&mut rng);
+        let num = pop_range.ind_sample(&mut rng);
         return_pop.decks.push(pop.decks[num].clone());
     }
     sortbyfitness(&mut return_pop);
